@@ -1,0 +1,18 @@
+## Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.vsp
+*.vsidx
+
+## NuGet
+packages/
+*.nupkg
+.nuget/
+
+## IDE
+.idea/
+*.swp
+*.swo
