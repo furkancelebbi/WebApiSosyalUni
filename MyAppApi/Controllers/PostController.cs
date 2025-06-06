@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -26,9 +28,16 @@ public class PostController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreatePostDto dto)
+    [Authorize]
+    public async Task<IActionResult> CreateAsync(CreatePostDto dto)
     {
-        await _postService.CreateAsync(dto);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("Kullanıcı kimliği bulunamadı.");
+
+        var userId = Guid.Parse(userIdClaim.Value);
+
+        await _postService.CreateAsync(dto, userId);
         return Ok("Post oluşturuldu.");
     }
 

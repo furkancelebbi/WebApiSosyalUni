@@ -40,19 +40,21 @@ public class PostService : IPostService
         };
     }
 
-    public async Task CreateAsync(CreatePostDto dto)
+    public async Task CreateAsync(CreatePostDto dto, Guid userId)
     {
         var post = new Post
         {
             Id = Guid.NewGuid(),
             Title = dto.Title,
             Content = dto.Content,
+            UserId = userId,
             CreatedAt = DateTime.UtcNow
         };
 
         await _context.Posts.AddAsync(post);
         await _context.SaveChangesAsync();
     }
+
 
     public async Task DeleteAsync(Guid id)
     {
