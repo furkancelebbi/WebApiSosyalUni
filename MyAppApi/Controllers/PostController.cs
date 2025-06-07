@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Application.DTOs.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -29,7 +30,7 @@ public class PostController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> CreateAsync(CreatePostDto dto)
+    public async Task<IActionResult> Create(CreatePostDto dto)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
@@ -47,4 +48,21 @@ public class PostController : ControllerBase
         await _postService.DeleteAsync(id);
         return Ok("Post silindi.");
     }
+
+
+    [HttpPut("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Update(Guid id, UpdatePostDto dto)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("Kullanıcı kimliği bulunamadı.");
+
+        var userId = Guid.Parse(userIdClaim.Value);
+
+        await _postService.UpdateAsync(id, dto, userId);
+        return Ok("Post güncellendi.");
+    }
+
+
 }

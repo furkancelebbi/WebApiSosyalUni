@@ -1,4 +1,6 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs.Users;
+using Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 
@@ -7,10 +9,12 @@ using Persistence.Context;
 public class PostService : IPostService
 {
     private readonly AppDbContext _context;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public PostService(AppDbContext context)
+    public PostService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<List<PostDto>> GetAllAsync()
@@ -47,14 +51,13 @@ public class PostService : IPostService
             Id = Guid.NewGuid(),
             Title = dto.Title,
             Content = dto.Content,
-            UserId = userId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         };
 
         await _context.Posts.AddAsync(post);
         await _context.SaveChangesAsync();
     }
-
 
     public async Task DeleteAsync(Guid id)
     {
@@ -64,4 +67,20 @@ public class PostService : IPostService
         _context.Posts.Remove(post);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateAsync(Guid id, UpdatePostDto dto, Guid userId)
+    {
+        var post = await _context.Posts.FindAsync(id);
+        if (post == null)
+            throw new Exception("Post bulunamadı.");
+
+        if (post.UserId != userId)
+            throw new UnauthorizedAccessException("Bu postu güncelleme yetkiniz yok.");
+
+        post.Title = dto.Title;
+        post.Content = dto.Content;
+
+        await _context.SaveChangesAsync();
+    }
+
 }

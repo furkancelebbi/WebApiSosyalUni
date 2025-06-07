@@ -72,6 +72,9 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IPostService, PostService>();
+
 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
