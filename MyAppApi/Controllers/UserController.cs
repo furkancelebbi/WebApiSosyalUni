@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Application.DTOs.Users;
+using Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyAppApi.Extensions;
 using Persistence.Context;
@@ -9,10 +11,12 @@ using Persistence.Context;
 public class UserController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly UserService _userService;
 
-    public UserController(AppDbContext context)
+    public UserController(AppDbContext context, UserService userService)
     {
         _context = context;
+        _userService = userService;
     }
 
     [HttpGet("me")]
@@ -32,5 +36,50 @@ public class UserController : ControllerBase
             user.Email,
             user.Role
         });
+    }
+
+    [HttpGet("all")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllUser()
+    {
+        var users = await _userService.GetAllUsersAsync();
+        return Ok(users);
+
+    }
+
+    [HttpPost("change-role")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ChangeUserRole([FromBody] ChangeRoleRequest request)
+    {
+        try
+        {
+            await _userService.ChangeUserRoleAsync(request.UserId, request.NewRole);
+            return Ok(new { Message = "Role başarıyla güncellendi" });
+
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch
+        {
+            return BadRequest();
+        }
+    }
+
+    [HttpDelete("{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUser(Guid userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user is null)
+            return NotFound("Kullanıcı bulunamadı.");
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return Ok(new { Message = "Kullaanıcı silindi" });
+
+
+
     }
 }

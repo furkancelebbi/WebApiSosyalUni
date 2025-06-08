@@ -46,27 +46,41 @@ public class PostService : IPostService
 
     public async Task CreateAsync(CreatePostDto dto, Guid userId)
     {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+            throw new Exception("Kullanıcı bulunamadı.");
+
+        if (dto.PostType == Post.PostType.Event && user.Role != "Admin")
+            throw new Exception("Etkinlik oluşturma yetkiniz yok.");
+
         var post = new Post
         {
             Id = Guid.NewGuid(),
             Title = dto.Title,
             Content = dto.Content,
             CreatedAt = DateTime.UtcNow,
-            UserId = userId
+            UserId = userId,
+            Type = dto.PostType
         };
 
-        await _context.Posts.AddAsync(post);
+        _context.Posts.Add(post);
         await _context.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid id)
+
+    public async Task DeleteAsync(Guid id, Guid userId)
     {
         var post = await _context.Posts.FindAsync(id);
-        if (post == null) throw new Exception("Post bulunamadı.");
+        if (post == null)
+            throw new Exception("Post bulunamadı");
+
+        if (post.UserId != userId)
+            throw new Exception("Bu postu silme yetkiniz yok.");
 
         _context.Posts.Remove(post);
         await _context.SaveChangesAsync();
     }
+
 
     public async Task UpdateAsync(Guid id, UpdatePostDto dto, Guid userId)
     {

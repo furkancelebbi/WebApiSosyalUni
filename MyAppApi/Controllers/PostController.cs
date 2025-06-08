@@ -42,13 +42,6 @@ public class PostController : ControllerBase
         return Ok("Post oluşturuldu.");
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        await _postService.DeleteAsync(id);
-        return Ok("Post silindi.");
-    }
-
 
     [HttpPut("{id}")]
     [Authorize]
@@ -63,6 +56,21 @@ public class PostController : ControllerBase
         await _postService.UpdateAsync(id, dto, userId);
         return Ok("Post güncellendi.");
     }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("Kullanıcı kimliği bulunamadı.");
+
+        Guid userId = Guid.Parse(userIdClaim.Value);
+
+        await _postService.DeleteAsync(id, userId);
+        return Ok("Post silindi.");
+    }
+
 
 
 }

@@ -1,6 +1,6 @@
-﻿using Application.DTOs;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 
 namespace MyAppApi.Controllers
@@ -17,20 +17,23 @@ namespace MyAppApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateUniversityDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateUniversityDto dto)
         {
+            if (await _context.Universities.AnyAsync(u => u.Name == dto.Name))
+                return Conflict("Bu üniversite zaten kayıtlı");
+
             var university = new University
             {
                 Id = Guid.NewGuid(),
-                Name = dto.Name,
-                City = dto.City,
-                Adress = dto.Adress
+                Name = dto.Name.Trim(),
+                City = dto.City.Trim(),
+                Address = dto.Address.Trim() // Dikkat: Artık "Address"
             };
 
-            _context.Universities.Add(university);
-            _context.SaveChanges();
+            await _context.Universities.AddAsync(university);
+            await _context.SaveChangesAsync();
 
-            return Ok(new { university.Id, Message = "Üniversite başarıyla eklendi." });
+            return CreatedAtAction(nameof(university), new { id = university.Id }, university);
         }
     }
 }

@@ -62,7 +62,31 @@ namespace Infrastructure.Services
             return token;
         }
 
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users
+                .Include(u => u.University) // Üniversite bilgisini de getir
+                .ToListAsync();
+        }
 
+        public async Task ChangeUserRoleAsync(Guid userId, string newRole)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                throw new BadRequestException("Kullanıcı bulunamadı.");
+
+            if (newRole != "User" && newRole != "Admin")
+                throw new BadRequestException("Geçersiz rol.");
+
+            user.Role = newRole;
+            await _context.SaveChangesAsync();
+        }
+        public async Task<List<User>> GetAdminsAsync()
+        {
+            return await _context.Users
+                .Where(u => u.Role == "Admin")
+                .ToListAsync();
+        }
 
     }
 }

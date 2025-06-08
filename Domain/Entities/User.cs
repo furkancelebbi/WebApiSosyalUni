@@ -12,9 +12,8 @@
         public Guid UniversityId { get; set; }
 
         public University University { get; set; }
-
-
         public ICollection<Post> Posts { get; set; }
         public ICollection<RankLog> RankLogs { get; set; }
+        public ICollection<Event> Events { get; set; } = new List<Event>();
     }
 }
