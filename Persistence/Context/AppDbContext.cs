@@ -9,12 +9,13 @@ namespace Persistence.Context
         {
         }
 
-        // DbSet'ler
+
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<University> Universities { get; set; }
         public DbSet<MealMenu> MealMenus { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<Announcement> Announcements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -74,6 +74,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 
 
 
@@ -86,11 +89,10 @@ var app = builder.Build();
 app.UseMiddleware<MyAppApi.Middlewares.ExceptionMiddleware>();
 
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 

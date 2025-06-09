@@ -1,5 +1,5 @@
 ﻿using Application.DTOs.Users;
-using Infrastructure.Services;
+using Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyAppApi.Extensions;
@@ -11,9 +11,9 @@ using Persistence.Context;
 public class UserController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
 
-    public UserController(AppDbContext context, UserService userService)
+    public UserController(AppDbContext context, IUserService userService)
     {
         _context = context;
         _userService = userService;
@@ -38,17 +38,17 @@ public class UserController : ControllerBase
         });
     }
 
+
     [HttpGet("all")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllUser()
     {
         var users = await _userService.GetAllUsersAsync();
         return Ok(users);
-
     }
 
     [HttpPost("change-role")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "User")]
     public async Task<IActionResult> ChangeUserRole([FromBody] ChangeRoleRequest request)
     {
         try
